@@ -3,7 +3,7 @@
 构建
 
 ```bash
-docker build -t dubbo-admin:2.5.4 .
+docker build -t dubbo-admin:2.8.4 .
 ```
 
 运行
@@ -17,7 +17,7 @@ docker run \
   -e ROOT_PASSWORD=root \
   -e GUEST_PASSWORD=guest \
   -p 9080:8080 \
-  dubbo-admin:2.5.4
+  dubbo-admin:2.8.4
 ```
 
 阿里云dubbo-admin镜像
@@ -31,5 +31,5 @@ docker run \
   -e ROOT_PASSWORD=root \
   -e GUEST_PASSWORD=guest \
   -p 9080:8080 \
-  registry.cn-hangzhou.aliyuncs.com/ameizi/dubbo-admin:2.5.4
+  registry.cn-hangzhou.aliyuncs.com/ameizi/dubbo-admin:2.8.4
 ```
