@@ -1,0 +1,109 @@
+# Docker部署Redis集群
+
+拉取Redis官方镜像
+
+```bash
+docker pull redis
+```
+
+创建模版文件
+
+```bash
+vim redis-cluster.tmpl
+```
+
+其内容为
+
+```
+# redis端口
+port ${PORT}
+# 关闭保护模式
+protected-mode no
+# 开启集群
+cluster-enabled yes
+# 集群节点配置
+cluster-config-file nodes.conf
+# 超时
+cluster-node-timeout 5000
+# 集群节点IP Host模式为宿主机IP
+cluster-announce-ip 127.0.0.1
+# 集群节点端口 7000 - 7005
+cluster-announce-port ${PORT}
+cluster-announce-bus-port 1${PORT}
+# 开启 appendonly 备份模式
+appendonly yes
+# 每秒钟备份
+appendfsync everysec
+# 对aof文件进行压缩时，是否执行同步操作
+no-appendfsync-on-rewrite no
+# 当目前aof文件大小超过上一次重写时的aof文件大小的100%时会再次进行重写
+auto-aof-rewrite-percentage 100
+# 重写前AOF文件的大小最小值 默认 64mb
+auto-aof-rewrite-min-size 5120mb
+# 关闭快照备份
+save ""
+```
+
+批量创建配置文件和数据目录
+
+```bash
+for port in `seq 7000 7005`; do \
+  mkdir -p ./${port}/conf \
+  && PORT=${port} envsubst < ./redis-cluster.tmpl > ./${port}/conf/redis.conf \
+  && mkdir -p ./${port}/data; \
+done
+```
+
+批量启动redis
+
+```bash
+for port in `seq 7000 7005`; do \
+docker run -d -ti \
+-v `pwd`/${port}/conf/redis.conf:/usr/local/etc/redis/redis.conf \
+-v `pwd`/${port}/data:/data \
+--restart always --name redis-${port} --net host \
+--sysctl net.core.somaxconn=1024 redis redis-server /usr/local/etc/redis/redis.conf; \
+done
+```
+
+创建集群
+
+随便进入其中一个容器
+
+```bash
+docker exec -it redis-7000 bash
+```
+
+进入后执行如下命令创建集群
+
+```bash
+redis-cli --cluster create 127.0.0.1:7000 127.0.0.1:7001 127.0.0.1:7002 127.0.0.1:7003 127.0.0.1:7004 127.0.0.1:7005 --cluster-replicas 1
+```
+
+输入yes后，集群创建完毕，接着登录其中一个节点，验证集群可用性
+
+```bash
+redis-cli -c -p 7000
+```
+
+输入cluster nodes查看集群状态
+
+```
+127.0.0.1:7000> cluster nodes
+06851aa134d50096d82a434eced9194233b5204e 127.0.0.1:7003@17003 slave 8b33f273386c9504ef8bd10b005e24825b3b9596 0 1567671901000 4 connected
+a42297b65f7101fc9e4941ef8a0e65080d1b6338 127.0.0.1:7005@17005 slave 0aa20378d14e3ef0859815196cbafa67e1001d0e 0 1567671901581 6 connected
+e7b6a35b1e92f94c225c507ea19f7f0318f0d1c3 127.0.0.1:7002@17002 master - 0 1567671902582 3 connected 10923-16383
+0aa20378d14e3ef0859815196cbafa67e1001d0e 127.0.0.1:7000@17000 myself,master - 0 1567671901000 1 connected 0-5460
+8b33f273386c9504ef8bd10b005e24825b3b9596 127.0.0.1:7001@17001 master - 0 1567671902383 2 connected 5461-10922
+fe355eed99100197f43d1216d1de82643dd496a5 127.0.0.1:7004@17004 slave e7b6a35b1e92f94c225c507ea19f7f0318f0d1c3 0 1567671901380 5 connected
+```
+
+如果宿主机有防火墙，需要手动开启访问策略
+
+```bash
+for port in `seq 7000 7005`; do \  
+firewall-cmd --zone=public --add-port=${port}/tcp --permanent  
+done
+# 重新载入
+firewall-cmd --reload
+```
