@@ -1,0 +1,23 @@
+version: '3.6'
+services:
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx/conf:/etc/nginx/conf.d
+      - ./nginx/logs:/var/log/nginx
+      - ./nginx/www:/var/www/html
+    restart: always
+
+  webp-server:
+    image: webpsh/webps:latest
+    restart: always
+    container_name: webp-server
+    volumes:
+      - ./webp-server/config.json:/etc/config.json
+      - ./nginx/www:/var/www/html
+    ports:
+      - 3333:3333
