@@ -1,0 +1,113 @@
+cluster:
+  standalone:
+#  zookeeper:
+#    nameSpace: ${SW_NAMESPACE:""}
+#    hostPort: ${SW_CLUSTER_ZK_HOST_PORT:localhost:2181}
+#    #Retry Policy
+#    baseSleepTimeMs: ${SW_CLUSTER_ZK_SLEEP_TIME:1000} # initial amount of time to wait between retries
+#    maxRetries: ${SW_CLUSTER_ZK_MAX_RETRIES:3} # max number of times to retry
+#  kubernetes:
+#    watchTimeoutSeconds: ${SW_CLUSTER_K8S_WATCH_TIMEOUT:60}
+#    namespace: ${SW_CLUSTER_K8S_NAMESPACE:default}
+#    labelSelector: ${SW_CLUSTER_K8S_LABEL:app=collector,release=skywalking}
+#    uidEnvName: ${SW_CLUSTER_K8S_UID:SKYWALKING_COLLECTOR_UID}
+#  consul:
+#    serviceName: ${SW_SERVICE_NAME:"SkyWalking_OAP_Cluster"}
+#     Consul cluster nodes, example: 10.0.0.1:8500,10.0.0.2:8500,10.0.0.3:8500
+#    hostPort: ${SW_CLUSTER_CONSUL_HOST_PORT:localhost:8500}
+core:
+  default:
+    # Mixed: Receive agent data, Level 1 aggregate, Level 2 aggregate
+    # Aggregator: Level 2 aggregate
+    # 混合角色：接收代理数据，1级聚合、2级聚合
+    # 接收者：接收代理数据，1级聚合点
+    # 聚合器：2级聚合点
+    role: ${SW_CORE_ROLE:Mixed} # Mixed/Receiver/Aggregator
+    # rest 服务地址和端口
+    restHost: ${SW_CORE_REST_HOST:0.0.0.0}
+    restPort: ${SW_CORE_REST_PORT:12800}
+    restContextPath: ${SW_CORE_REST_CONTEXT_PATH:/}
+    # gRPC 服务地址和端口
+    gRPCHost: ${SW_CORE_GRPC_HOST:0.0.0.0}
+    gRPCPort: ${SW_CORE_GRPC_PORT:11800}
+    downsampling:
+      - Hour
+      - Day
+      - Month
+    # 设置度量数据的超时。超时过期后，度量数据将自动删除.
+    # 单位分钟
+    recordDataTTL: ${SW_CORE_RECORD_DATA_TTL:90} # Unit is minute
+    # 单位分钟
+    minuteMetricsDataTTL: ${SW_CORE_MINUTE_METRIC_DATA_TTL:90} # Unit is minute
+    # 单位小时
+    hourMetricsDataTTL: ${SW_CORE_HOUR_METRIC_DATA_TTL:36} # Unit is hour
+    # 单位天
+    dayMetricsDataTTL: ${SW_CORE_DAY_METRIC_DATA_TTL:45} # Unit is day
+    # 单位月
+    monthMetricsDataTTL: ${SW_CORE_MONTH_METRIC_DATA_TTL:18} # Unit is month
+storage:
+  elasticsearch:
+    # elasticsearch 的集群名称
+    nameSpace: ${SW_NAMESPACE:elasticsearch}
+    # elasticsearch 集群节点的地址及端口
+    clusterNodes: ${SW_STORAGE_ES_CLUSTER_NODES:elasticsearch:9200}
+    # 设置 elasticsearch 索引分片数量
+    indexShardsNumber: ${SW_STORAGE_ES_INDEX_SHARDS_NUMBER:2}
+    # 设置 elasticsearch 索引副本数
+    indexReplicasNumber: ${SW_STORAGE_ES_INDEX_REPLICAS_NUMBER:0}
+    # 批量处理配置
+    # 每2000个请求执行一次批量
+    bulkActions: ${SW_STORAGE_ES_BULK_ACTIONS:2000}
+    # 每 20mb 刷新一次内存块
+    bulkSize: ${SW_STORAGE_ES_BULK_SIZE:20}
+    # 无论请求的数量如何，每10秒刷新一次堆
+    flushInterval: ${SW_STORAGE_ES_FLUSH_INTERVAL:10}
+    # 并发请求的数量
+    concurrentRequests: ${SW_STORAGE_ES_CONCURRENT_REQUESTS:2}
+    # elasticsearch 查询的最大数量
+    metadataQueryMaxSize: ${SW_STORAGE_ES_QUERY_MAX_SIZE:5000}
+    # elasticsearch 查询段最大数量
+    segmentQueryMaxSize: ${SW_STORAGE_ES_QUERY_SEGMENT_SIZE:200}
+#  h2:
+#    driver: ${SW_STORAGE_H2_DRIVER:org.h2.jdbcx.JdbcDataSource}
+#    url: ${SW_STORAGE_H2_URL:jdbc:h2:mem:skywalking-oap-db}
+#    user: ${SW_STORAGE_H2_USER:sa}
+#    metadataQueryMaxSize: ${SW_STORAGE_H2_QUERY_MAX_SIZE:5000}
+#  mysql:
+#    metadataQueryMaxSize: ${SW_STORAGE_H2_QUERY_MAX_SIZE:5000}
+receiver-sharing-server:
+  default:
+receiver-register:
+  default:
+receiver-trace:
+  default:
+    bufferPath: ${SW_RECEIVER_BUFFER_PATH:../trace-buffer/}
+    bufferOffsetMaxFileSize: ${SW_RECEIVER_BUFFER_OFFSET_MAX_FILE_SIZE:100}
+    bufferDataMaxFileSize: ${SW_RECEIVER_BUFFER_DATA_MAX_FILE_SIZE:500}
+    bufferFileCleanWhenRestart: ${SW_RECEIVER_BUFFER_FILE_CLEAN_WHEN_RESTART:false}
+    sampleRate: ${SW_TRACE_SAMPLE_RATE:10000}
+    slowDBAccessThreshold: ${SW_SLOW_DB_THRESHOLD:default:200,mongodb:100}
+receiver-jvm:
+  default:
+service-mesh:
+  default:
+    bufferPath: ${SW_SERVICE_MESH_BUFFER_PATH:../mesh-buffer/}
+    bufferOffsetMaxFileSize: ${SW_SERVICE_MESH_OFFSET_MAX_FILE_SIZE:100}
+    bufferDataMaxFileSize: ${SW_SERVICE_MESH_BUFFER_DATA_MAX_FILE_SIZE:500}
+    bufferFileCleanWhenRestart: ${SW_SERVICE_MESH_BUFFER_FILE_CLEAN_WHEN_RESTART:false}
+istio-telemetry:
+  default:
+envoy-metric:
+  default:
+# receiver_zipkin:
+#   default:
+#     host: ${SW_RECEIVER_ZIPKIN_HOST:0.0.0.0}
+#     port: ${SW_RECEIVER_ZIPKIN_PORT:9411}
+#     contextPath: ${SW_RECEIVER_ZIPKIN_CONTEXT_PATH:/}
+query:
+  graphql:
+    path: ${SW_QUERY_GRAPHQL_PATH:/graphql}
+alarm:
+  default:
+telemetry:
+  none:

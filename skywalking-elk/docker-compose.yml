@@ -1,0 +1,79 @@
+version: '3'
+
+services:
+  elasticsearch:
+    image: elasticsearch:6.4.1
+    container_name: elasticsearch
+    restart: always
+    environment:
+      - cluster.name=elasticsearch
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - node.name=elasticsearch_node
+      - "TZ=Asia/Shanghai"
+    volumes:
+      # - ./data:/usr/share/elasticsearch/data
+      # - ./logs:/usr/share/elasticsearch/logs
+      - ./elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+    ports:
+      - 9200:9200
+      - 9300:9300
+  kibana:
+    image: kibana:6.4.1
+    container_name: kibana
+    restart: always
+    links:
+      - elasticsearch
+    depends_on:
+      - elasticsearch
+    environment:
+      - "elasticsearch.hosts=http://elasticsearch:9200"
+    ports:
+      - 5601:5601
+  # logstash:
+  #   image: logstash:6.4.1
+  #   container_name: logstash
+  #   restart: always
+  #   volumes:
+  #     - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+  #   depends_on:
+  #     - elasticsearch
+  #   links:
+  #     - elasticsearch:elasticsearch
+  #   ports:
+  #     - 4560:4560
+  skywalking-oap:
+    image: apache/skywalking-oap-server:6.4.0
+    container_name: skywalking-oap
+    restart: always
+    depends_on:
+      - elasticsearch
+    links:
+      - elasticsearch
+    ports:
+      # gRPC APIs
+      - 11800:11800
+      # http rest APIs
+      - 12800:12800
+    environment:
+      - "TZ=Asia/Shanghai"
+    # volumes:
+    #   - ./skywalking/config:/apache-skywalking-apm-bin/config:ro
+
+  skywalking-ui:
+    image: apache/skywalking-ui:6.4.0
+    container_name: skywalking-ui
+    depends_on:
+      - skywalking-oap
+    links:
+      - skywalking-oap
+    restart: always
+    ports:
+      - 8080:8080
+    environment:
+      - "collector.ribbon.listOfServers=skywalking-oap:12800"
+      - "TZ=Asia/Shanghai"
+
+networks:
+  default:
+    driver: bridge
