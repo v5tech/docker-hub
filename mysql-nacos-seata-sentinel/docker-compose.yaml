@@ -1,0 +1,50 @@
+version: "3.6"
+
+services:
+  nacos-server:
+    image: nacos/nacos-server:1.2.1
+    container_name: nacos-server
+    ports:
+      - "8848:8848"
+    environment:
+      - MODE=standalone
+
+  seata-server:
+    image: seataio/seata-server:1.2.0
+    container_name: seata-server
+    depends_on:
+      - nacos-server
+      - mysql
+    ports:
+      - "8091:8091"
+    env_file:
+      - ./.env
+    environment:
+      - SEATA_PORT=8091
+      - SEATA_IP=${HOST_IP}
+      - STORE_MODE=db
+    volumes:
+      # 挂载本地registry.conf，覆盖容器内registry.conf
+      - ./scripts/config-center/registry.conf:/seata-server/resources/registry.conf
+
+  mysql:
+    image: mysql:5.7
+    container_name: mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    ports:
+      - "3306:3306"
+    environment:
+      # 设置 mysql root用户密码
+      - MYSQL_ROOT_PASSWORD=root
+      # 修复导入脚本时的中文乱码
+      - LANG=C.UTF-8
+    volumes:
+      # 挂载 mysql 数据目录
+      - ./mysql/data:/var/lib/mysql
+      # 挂载 mysql 数据库初始化脚本
+      - ./scripts/mysql:/docker-entrypoint-initdb.d
+
+networks:
+  default:
+    driver: bridge
+    name: nmss-net
