@@ -1,0 +1,38 @@
+version: '3.6'
+
+services:
+  tracker:
+    container_name: tracker
+    image: ygqygq2/fastdfs-nginx:latest
+    command: tracker
+    restart: always
+    networks:
+      fdfs-net:
+        ipv4_address: 172.24.0.2 # 设置tracker服务器固定 ip，该 ip 必须在下文创建的网络的网段范围之内
+    volumes:
+      - ./fdfs/tracker:/var/fdfs
+  
+  storage:
+    container_name: storage
+    image: ygqygq2/fastdfs-nginx:latest
+    command: storage
+    restart: always
+    depends_on:
+      - tracker
+    networks:
+      fdfs-net:
+        ipv4_address: 172.24.0.3 # 设置storage服务器固定 ip，该 ip 必须在下文创建的网络的网段范围之内
+    environment:
+      - TRACKER_SERVER=172.24.0.2:22122 # 设置tracker服务器地址和端口
+    volumes:
+      - ./fdfs/storage:/var/fdfs
+
+# 重新定义网络
+networks:
+  fdfs-net:
+    name: fdfs-net # 自定义网络名称
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.24.0.0/24 # 定义网段
