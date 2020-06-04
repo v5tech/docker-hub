@@ -4,3 +4,6 @@
 [submodule "docker-rocketmq"]
 	path = docker-rocketmq
 	url = https://github.com/foxiswho/docker-rocketmq.git
+[submodule "fastdfs-nginx"]
+	path = fastdfs-nginx
+	url = https://github.com/ameizi/fastdfs-nginx.git
