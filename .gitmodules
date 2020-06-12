@@ -7,3 +7,6 @@
 [submodule "fastdfs-nginx"]
 	path = fastdfs-nginx
 	url = https://github.com/ameizi/fastdfs-nginx.git
+[submodule "skywalking-docker"]
+	path = skywalking-docker
+	url = https://github.com/apache/skywalking-docker.git
