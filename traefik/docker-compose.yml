@@ -1,0 +1,33 @@
+version: "3.6"
+
+services:
+
+  traefik:
+    image: "traefik:v2.2"
+    container_name: "traefik"
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.http.address=:80"
+      - "--entrypoints.https.address=:443"
+      - "--entrypoints.ssh.address=:22"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "22:22"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  whoami:
+    image: "containous/whoami"
+    container_name: "whoami"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.whoami.entrypoints=http"
+      - "traefik.http.routers.whoami.rule=Host(`whoami.me`)"
+
+networks:
+  default:
+    name: traefik
