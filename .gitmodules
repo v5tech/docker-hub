@@ -10,3 +10,6 @@
 [submodule "skywalking-docker"]
 	path = skywalking-docker
 	url = https://github.com/apache/skywalking-docker.git
+[submodule "docker-elk"]
+	path = docker-elk
+	url = https://github.com/deviantony/docker-elk.git
