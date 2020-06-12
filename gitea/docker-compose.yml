@@ -1,0 +1,112 @@
+version: '3.6'
+
+services:
+  
+  traefik:
+    image: "traefik:v2.2"
+    container_name: "traefik"
+    restart: always
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.git.address=:22"
+      - "--entrypoints.http.address=:80"
+      - "--entrypoints.https.address=:443"
+    ports:
+      - "22:22"
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    networks:
+      - traefik
+      - gitea
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  gitea:
+    image: gitea/gitea:latest
+    container_name: "gitea"
+    restart: always
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      - APP_NAME=gitea
+      - RUN_MODE=prod
+      - RUN_USER=git
+      - SSH_DOMAIN=gitea.lab.com
+      - SSH_PORT=22
+      - SSH_LISTEN_PORT=22
+      - HTTP_PORT=3000
+      - ROOT_URL=https://gitea.lab.com
+      - DB_TYPE=mysql
+      - DB_HOST=db:3306
+      - DB_NAME=gitea
+      - DB_USER=gitea
+      - DB_PASSWD=gitea
+      - DB_CHARSET=utf8
+    networks:
+      - traefik
+      - gitea
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
+      # - "traefik.http.middlewares.redirectscheme.redirectscheme.scheme=https"
+      # - "traefik.http.middlewares.redirectscheme.redirectscheme.permanent=true"
+      # - "traefik.http.middlewares.redirectscheme.redirectscheme.port=443"
+      # - "traefik.http.middlewares.compress.compress=true"
+      - "traefik.http.routers.giteaweb.entrypoints=http"
+      - "traefik.http.routers.giteaweb.rule=Host(`gitea.lab.com`)"
+      - "traefik.http.routers.giteassl.entrypoints=https"
+      - "traefik.http.routers.giteassl.tls=true"
+      - "traefik.http.routers.giteassl.rule=Host(`gitea.lab.com`)"
+      - "traefik.http.services.giteabackend.loadbalancer.server.scheme=http"
+      - "traefik.http.services.giteabackend.loadbalancer.server.port=3000"
+      - "traefik.tcp.routers.giteassh.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.giteassh.tls=true"
+      - "traefik.tcp.routers.giteassh.entrypoints=git"
+      - "traefik.tcp.routers.giteassh.service=gitea"
+      - "traefik.tcp.services.gitea.loadbalancer.server.port=22"
+    volumes:
+      - giteadata:/data
+      # - /etc/timezone:/etc/timezone:ro
+      # - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - db
+    extra_hosts:
+      - "git.lab.com:127.0.0.1"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider --proxy off localhost:3000 || exit 1"]
+      interval: 5s
+
+  db:
+    image: mysql:5.7.16
+    container_name: "mysql"
+    environment:
+      MYSQL_ROOT_PASSWORD: gitea
+      MYSQL_DATABASE: gitea
+      MYSQL_USER: gitea
+      MYSQL_PASSWORD: gitea
+      TZ: Asia/Shanghai
+    networks:
+      - gitea
+    expose:
+      - 3306
+    restart: always
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysqldata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "/etc/init.d/mysql status"]
+      interval: 30s
+
+volumes:
+  giteadata:
+  mysqldata:
+
+# 首先执行 docker network create traefik
+networks:
+  gitea:
+    internal: true
+  traefik:
+    external: true
