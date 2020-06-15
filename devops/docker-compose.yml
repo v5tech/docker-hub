@@ -1,0 +1,84 @@
+version: '3.6'
+services:
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    restart: always
+    ports:
+      - '8080:8080'
+      - '50000:50000'
+    volumes:
+      - jenkins_data:/var/jenkins_home
+    environment:
+      - TZ=Asia/Shanghai
+      - JENKINS_OPTS=--prefix=/jenkins
+
+  gitlab:
+    image: gitlab/gitlab-ce:latest
+    container_name: gitlab
+    restart: always
+    hostname: '172.24.202.76'
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://172.24.202.76'
+        gitlab_rails['time_zone'] = 'Asia/Shanghai'
+        gitlab_rails['gitlab_shell_ssh_port'] = 22
+    ports:
+      - '80:80'
+      - '22:22'
+      - '443:443'
+    volumes:
+      - gitlab_config:/etc/gitlab
+      - gitlab_logs:/var/log/gitlab
+      - gitlab_data:/var/opt/gitlab
+
+  sonarqube:
+    image: sonarqube:8.3.1-community
+    container_name: sonarqube
+    restart: always
+    environment:
+      - SONARQUBE_JDBC_USERNAME=sonar
+      - SONARQUBE_JDBC_PASSWORD=sonar
+      - SONARQUBE_JDBC_URL=jdbc:postgresql://postgres_db:5432/sonarqube
+    ports:
+      - '9000:9000'
+      - '9092:9092'
+    volumes:
+      - sonarqube_conf:/opt/sonarqube/conf
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_logs:/opt/sonarqube/logs
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_bundled-plugins:/opt/sonarqube/lib/bundled-plugins
+
+  postgres_db:
+    image: postgres:12.3
+    container_name: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=sonar
+      - POSTGRES_PASSWORD=sonar
+      - POSTGRES_DB=sonarqube
+    ports:
+      - '5432:5432'      
+    volumes:
+      - postgresql_data:/var/lib/postgresql
+ 
+  # adminer:
+  #   image: adminer
+  #   container_name: adminer
+  #   restart: always
+  #   ports:
+  #     - '8081:8080'
+
+volumes:
+  jenkins_data:
+  gitlab_config:
+  gitlab_logs:
+  gitlab_data:
+  sonarqube_conf:
+  sonarqube_data:
+  sonarqube_logs:
+  sonarqube_extensions:
+  sonarqube_bundled-plugins:
+  postgresql_data:
