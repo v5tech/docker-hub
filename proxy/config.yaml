@@ -1,0 +1,16 @@
+# your domain
+domain: localhost:8080
+
+# database url
+database_url: ""
+
+# cloudflare api
+cf_email: ""
+cf_key: ""
+
+# source definition file
+source-files:
+  # use local file
+  - source.yaml
+  # use web file
+  - https://example.com/source.yaml

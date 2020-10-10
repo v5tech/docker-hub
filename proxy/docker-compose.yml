@@ -1,0 +1,12 @@
+version: "3"
+services:
+  proxypool:
+    container_name: proxypool
+    image: clarkecheng/proxypool:latest
+    entrypoint: ["/proxypool-src/proxypool", "-c", "config.yaml"]
+    ports: 
+      - 8080:8080
+    restart: always
+    volumes: 
+      - ./config.yaml:/proxypool-src/config.yaml
+      - ./source.yaml:/proxypool-src/source.yaml
