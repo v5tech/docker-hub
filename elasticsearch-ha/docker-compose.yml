@@ -1,0 +1,134 @@
+version: '2.2'
+
+services:
+
+  nginx_master:
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    restart: on-failure
+    image: nginx_master
+    container_name: nginx_master
+    volumes:
+      - ./nginx/index-master.html:/usr/share/nginx/html/index.html
+      - ./keepalived/keepalived-master.conf:/etc/keepalived/keepalived.conf
+    networks:
+      esnet:
+        ipv4_address: 172.20.128.2
+    cap_add: 
+      - NET_ADMIN
+
+  nginx_slave:
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    restart: on-failure
+    image: nginx_slave
+    container_name: nginx_slave
+    volumes:
+      - ./nginx/index-slave.html:/usr/share/nginx/html/index.html
+      - ./keepalived/keepalived-slave.conf:/etc/keepalived/keepalived.conf
+    networks:
+      esnet:
+        ipv4_address: 172.20.128.3
+    cap_add: 
+        - NET_ADMIN
+
+  haproxy:
+    restart: on-failure    
+    image: haproxy:1.7-alpine
+    container_name: haproxy
+    ports:
+      - 80:80
+      - 8000:8000
+      - 9200:9200
+      - 1080:1080
+    volumes:
+      - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+    networks:
+      - esnet
+    depends_on:
+      - nginx_master
+      - nginx_slave
+      - es1
+      - es2
+      - es3
+
+  es1:
+    restart: on-failure
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.8.13
+    container_name: es1
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ./es/es1.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - esdata1:/usr/share/elasticsearch/data
+    # ports:
+    #   - 9200:9200
+    networks:
+      esnet:
+        ipv4_address: 172.20.128.5
+
+  es2:
+    restart: on-failure
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.8.13
+    container_name: es2
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ./es/es2.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - esdata2:/usr/share/elasticsearch/data
+    # ports:
+    #   - 9200:9200
+    networks:
+      esnet:
+        ipv4_address: 172.20.128.6
+
+  es3:
+    restart: on-failure
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.8.13
+    container_name: es3
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ./es/es3.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - esdata3:/usr/share/elasticsearch/data
+    # ports:
+    #   - 9200:9200
+    networks:
+      esnet:
+        ipv4_address: 172.20.128.7
+
+volumes:
+  esdata1:
+    driver: local
+  esdata2:
+    driver: local
+  esdata3:
+    driver: local
+
+networks:
+  esnet:
+    name: esnet
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
