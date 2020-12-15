@@ -67,7 +67,7 @@ services:
         soft: -1
         hard: -1
     volumes:
-      - ./es/es1.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ./elasticsearch/es1.yml:/usr/share/elasticsearch/config/elasticsearch.yml
       - esdata1:/usr/share/elasticsearch/data
     # ports:
     #   - 9200:9200
@@ -88,7 +88,7 @@ services:
         soft: -1
         hard: -1
     volumes:
-      - ./es/es2.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ./elasticsearch/es2.yml:/usr/share/elasticsearch/config/elasticsearch.yml
       - esdata2:/usr/share/elasticsearch/data
     # ports:
     #   - 9200:9200
@@ -109,7 +109,7 @@ services:
         soft: -1
         hard: -1
     volumes:
-      - ./es/es3.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ./elasticsearch/es3.yml:/usr/share/elasticsearch/config/elasticsearch.yml
       - esdata3:/usr/share/elasticsearch/data
     # ports:
     #   - 9200:9200
