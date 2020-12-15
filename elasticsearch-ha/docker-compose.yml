@@ -5,7 +5,7 @@ services:
   nginx_master:
     build:
       context: ./
-      dockerfile: ./Dockerfile
+      dockerfile: ./nginx/Dockerfile
     restart: on-failure
     image: nginx_master
     container_name: nginx_master
@@ -21,7 +21,7 @@ services:
   nginx_slave:
     build:
       context: ./
-      dockerfile: ./Dockerfile
+      dockerfile: ./nginx/Dockerfile
     restart: on-failure
     image: nginx_slave
     container_name: nginx_slave
