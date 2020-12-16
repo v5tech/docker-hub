@@ -10,6 +10,7 @@ services:
     image: nginx_master
     container_name: nginx_master
     volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./nginx/index-master.html:/usr/share/nginx/html/index.html
       - ./keepalived/keepalived-master.conf:/etc/keepalived/keepalived.conf
     networks:
@@ -26,6 +27,7 @@ services:
     image: nginx_slave
     container_name: nginx_slave
     volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./nginx/index-slave.html:/usr/share/nginx/html/index.html
       - ./keepalived/keepalived-slave.conf:/etc/keepalived/keepalived.conf
     networks:
