@@ -16,6 +16,8 @@ services:
     networks:
       esnet:
         ipv4_address: 172.20.128.2
+    # ports:
+    #   - 9200:9200
     cap_add: 
       - NET_ADMIN
 
@@ -33,6 +35,8 @@ services:
     networks:
       esnet:
         ipv4_address: 172.20.128.3
+    # ports:
+    #   - 9200:9200
     cap_add: 
         - NET_ADMIN
 
@@ -40,15 +44,16 @@ services:
     restart: on-failure    
     image: haproxy:1.7-alpine
     container_name: haproxy
+    volumes:
+      - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+    networks:
+      esnet:
+        ipv4_address: 172.20.128.8
     ports:
       - 80:80
       - 8000:8000
       - 9200:9200
       - 1080:1080
-    volumes:
-      - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
-    networks:
-      - esnet
     depends_on:
       - nginx_master
       - nginx_slave
@@ -118,6 +123,15 @@ services:
     networks:
       esnet:
         ipv4_address: 172.20.128.7
+
+  cerebro:
+    restart: on-failure
+    image: lmenezes/cerebro
+    container_name: cerebro
+    ports:
+      - 9000:9000
+    networks:
+      - esnet
 
 volumes:
   esdata1:
