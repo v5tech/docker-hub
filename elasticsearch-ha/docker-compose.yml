@@ -133,6 +133,15 @@ services:
     networks:
       - esnet
 
+  elasticsearch-head:
+    restart: on-failure
+    image: mobz/elasticsearch-head:5
+    container_name: elasticsearch-head
+    ports:
+      - 9100:9100
+    networks:
+      - esnet
+
 volumes:
   esdata1:
     driver: local

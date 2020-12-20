@@ -10,11 +10,17 @@ node.data: true
 path.data: /usr/share/elasticsearch/data
 # 日志存储目录
 path.logs: /usr/share/elasticsearch/logs
+# 数据备份目录
+path.repo: /usr/share/elasticsearch/backup
+node.ml: false
+xpack.ml.enabled: false
 # 是否锁住物理内存
 bootstrap.memory_lock: true
 bootstrap.system_call_filter: false
 # Http通信端口
 http.port: 9200
+http.cors.enabled: true
+http.cors.allow-origin: "*"
 # 对外提供服务的IP地址
 network.host: 0.0.0.0 
 # 可成为master的节点数量。为避免脑裂，建议设置为（master 节点总数 /2）+ 1
