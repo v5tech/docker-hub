@@ -5,7 +5,7 @@ services:
 
   shard2svr1:
     container_name: shard2svr1
-    image: mongo
+    image: mongo:4.2
     command: mongod --shardsvr --replSet shard2rs --port 27017 --dbpath /data/db
     ports:
       - 50004:27017
@@ -14,7 +14,7 @@ services:
 
   shard2svr2:
     container_name: shard2svr2
-    image: mongo
+    image: mongo:4.2
     command: mongod --shardsvr --replSet shard2rs --port 27017 --dbpath /data/db
     ports:
       - 50005:27017
@@ -23,7 +23,7 @@ services:
 
   shard2svr3:
     container_name: shard2svr3
-    image: mongo
+    image: mongo:4.2
     command: mongod --shardsvr --replSet shard2rs --port 27017 --dbpath /data/db
     ports:
       - 50006:27017

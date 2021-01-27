@@ -5,7 +5,7 @@ services:
 
   cfgsvr1:
     container_name: cfgsvr1
-    image: mongo
+    image: mongo:4.2
     command: mongod --configsvr --replSet cfgrs --port 27017 --dbpath /data/db
     ports:
       - 40001:27017
@@ -14,7 +14,7 @@ services:
 
   cfgsvr2:
     container_name: cfgsvr2
-    image: mongo
+    image: mongo:4.2
     command: mongod --configsvr --replSet cfgrs --port 27017 --dbpath /data/db
     ports:
       - 40002:27017
@@ -23,7 +23,7 @@ services:
 
   cfgsvr3:
     container_name: cfgsvr3
-    image: mongo
+    image: mongo:4.2
     command: mongod --configsvr --replSet cfgrs --port 27017 --dbpath /data/db
     ports:
       - 40003:27017
