@@ -48,3 +48,19 @@ Default user
 user: admin  
 password: test
 ```
+
+## 参考文档
+
+[工作流引擎技术介绍-工作流现状](https://mp.weixin.qq.com/s/PxsEW-RhG3YkMfzpakc5zw)
+
+[工作流引擎技术介绍-Flowable介绍](https://mp.weixin.qq.com/s/DjWMQoLsDCqE5JsU-iJuAA)
+
+[工作流引擎技术介绍-BPMN2.0](https://mp.weixin.qq.com/s/69OrKCnvAG7nXtW7OgBzow)
+
+[工作流引擎技术介绍-Flowable与Activiti7](https://mp.weixin.qq.com/s/QHkRzlWoM9fQ6lRSpII3FQ)
+
+[工作流引擎技术介绍-Flowable例子-工时申报流程（一）](https://mp.weixin.qq.com/s/LBoX2Zlt5L7_ggXzSDfUHw)
+
+[工作流引擎技术介绍-Flowable例子-请假流程（二）](https://mp.weixin.qq.com/s/fkC7qwJLq37YY6HUCqAQVg)
+
+[工作流引擎技术介绍-Flowable例子-保险索赔案例流程（三）](https://mp.weixin.qq.com/s/6Ctig9R_knVRJo1zzgK20w)
