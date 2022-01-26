@@ -40,10 +40,7 @@ docker run -p 8080:8080 flowable/flowable-ui:6.7.2
 
 Included Flowable apps
 
-* Flowable IDM (http://localhost:8080/flowable-idm)
-* Flowable Modeler (http://localhost:8080/flowable-modeler)
-* Flowable Task (http://localhost:8080/flowable-task)
-* Flowable Admin (http://localhost:8080/flowable-admin)
+* Flowable UI (http://localhost:8080/flowable-ui)
 
 Default user
 
