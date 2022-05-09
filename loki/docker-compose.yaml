@@ -1,12 +1,11 @@
-version: "3.8"
+version: "3"
 
 networks:
   loki:
 
 services:
-
   loki:
-    image: grafana/loki:1.5.0
+    image: grafana/loki:2.0.0
     ports:
       - "3100:3100"
     command: -config.file=/etc/loki/local-config.yaml
@@ -14,10 +13,10 @@ services:
       - loki
 
   promtail:
-    image: grafana/promtail:1.5.0
+    image: grafana/promtail:2.0.0
     volumes:
       - /var/log:/var/log
-    command: -config.file=/etc/promtail/docker-config.yaml
+    command: -config.file=/etc/promtail/config.yml
     networks:
       - loki
 
@@ -27,35 +26,3 @@ services:
       - "3000:3000"
     networks:
       - loki
-
-  ui:
-    image: quay.io/cloudminds/dagger-ui:latest
-    hostname: dagger-ui
-    container_name: dagger-ui
-    depends_on:
-      - backend
-    ports:
-      - '8080:8080'
-    networks:
-      - loki
-
-  backend:
-    image: quay.io/cloudminds/dagger-backend:latest
-    hostname: dagger-backend
-    container_name: dagger-backend
-    environment:
-      - LOKI_SERVER=http://loki:3100
-    ports:
-      - '8000:8000'
-    networks:
-      - loki
-    command: ['sh', '-c', './dagger']
-    volumes:
-      - 'static_data:/usr/src/app/static:rw'
-      - 'sqlite_data:/usr/src/app/db:rw'
-
-volumes:
-  sqlite_data:
-    driver: local
-  static_data:
-    driver: local
