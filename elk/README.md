@@ -1,9 +1,7 @@
-# ELK
+# elk
 
-安装ik分词器
+已集成好各种插件
 
 ```bash
-docker-compose exec elasticsearch elasticsearch-plugin install https://github.com/medcl/elasticsearch-analysis-ik/releases/download/v7.15.2/elasticsearch-analysis-ik-7.15.2.zip
-
-docker-compose restart elasticsearch
+docker-compose -f docker-compose.yaml up -d 
 ```

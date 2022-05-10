@@ -50,6 +50,7 @@ services:
         hard: -1
     volumes:
       - data01:/usr/share/elasticsearch/data
+      - ./elasticsearch-plugin:/apps/elasticsearch-plugin
       - ./docker-entrypoint-es-plugins.sh:/apps/docker-entrypoint-es-plugins.sh
     ports:
       - "9200:9200"
@@ -74,6 +75,7 @@ services:
         hard: -1
     volumes:
       - data02:/usr/share/elasticsearch/data
+      - ./elasticsearch-plugin:/apps/elasticsearch-plugin
       - ./docker-entrypoint-es-plugins.sh:/apps/docker-entrypoint-es-plugins.sh
     networks:
       - elastic
@@ -96,6 +98,7 @@ services:
         hard: -1
     volumes:
       - data03:/usr/share/elasticsearch/data
+      - ./elasticsearch-plugin:/apps/elasticsearch-plugin
       - ./docker-entrypoint-es-plugins.sh:/apps/docker-entrypoint-es-plugins.sh
     networks:
       - elastic
