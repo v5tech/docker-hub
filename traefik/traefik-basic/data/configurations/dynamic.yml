@@ -14,7 +14,7 @@ http:
 
     # UserName : admin
     # Password : admin
-    user-auth:
+    basic-auth:
       basicAuth:
         users:
           - "admin:$apr1$jkg8.qbL$wGaoPt1r/f/HN.b3.D8XQ0"
