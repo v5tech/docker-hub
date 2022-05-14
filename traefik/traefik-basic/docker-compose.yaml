@@ -18,15 +18,15 @@ services:
       # Add folder with dynamic configuration yml
       - ./data/configurations:/configurations
     networks:
-      - proxy
+      - traefik
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=proxy"
+      - "traefik.docker.network=traefik"
       - "traefik.http.routers.traefik-secure.entrypoints=websecure"
       - "traefik.http.routers.traefik-secure.rule=Host(`traefik.anchnet.com`)"
       - "traefik.http.routers.traefik-secure.middlewares=user-auth@file"
       - "traefik.http.routers.traefik-secure.service=api@internal"
 
 networks:
-  proxy:
+  traefik:
     external: true
