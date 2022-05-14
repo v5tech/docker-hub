@@ -1,22 +1,27 @@
-version: "3"
- 
-networks:
- kong-net:
-  driver: bridge
- 
+version: "3.4"
+
+networks: 
+  kong-net:
+
+volumes:
+  kong-datastore:
+
 services:
  
   #######################################
-  # Postgres: The database used by Kong
+  # 启动PostgreSQL数据库
   #######################################
   kong-database:
     image: postgres:9.6
+    container_name: kong-database
+    volumes:
+      - kong-datastore:/var/lib/postgresql/data
     restart: always
     networks:
       - kong-net
     environment:
-      POSTGRES_USER: kong
       POSTGRES_DB: kong
+      POSTGRES_USER: kong
       POSTGRES_PASSWORD: kong
     ports:
       - "5432:5432"
@@ -27,10 +32,11 @@ services:
       retries: 5
  
   #######################################
-  # Kong database migration
+  # 初始化Kong数据库
   #######################################
   kong-migration:
     image: kong:latest
+    container_name: kong-migration
     command: "kong migrations bootstrap"
     networks:
       - kong-net
@@ -39,29 +45,65 @@ services:
       - KONG_DATABASE=postgres
       - KONG_PG_HOST=kong-database
       - KONG_PG_DATABASE=kong
+      - KONG_PG_USER=kong
       - KONG_PG_PASSWORD=kong
     links:
       - kong-database
     depends_on:
       - kong-database
+
+  #######################################
+  # 保护Kong Admin Api数据
+  #######################################
+  kong-secure-admin:
+    image: kong:latest
+    container_name: kong-secure-admin
+    volumes:
+      - ./scripts/kong.yml:/home/kong/kong.yml
+    command: "kong config db_import /home/kong/kong.yml"
+    networks:
+      - kong-net
+    restart: on-failure
+    environment:
+      - KONG_DATABASE=postgres
+      - KONG_PG_HOST=kong-database
+      - KONG_PG_DATABASE=kong
+      - KONG_PG_USER=kong
+      - KONG_PG_PASSWORD=kong
+    links:
+      - kong-database
+    depends_on:
+      - kong-migration
  
   #######################################
   # Kong: The API Gateway
   #######################################
   kong:
     image: kong:latest
+    container_name: kong
     restart: always
     networks:
       - kong-net
+    ports:
+      - "8000:8000" # Listener
+      - "8443:8443" # Listener  (SSL)
+      - "127.0.0.1:8001:8001" # Admin API
+      - "127.0.0.1:8444:8444" # Admin API (SSL)
     environment:
       KONG_DATABASE: postgres
       KONG_PG_HOST: kong-database
+      KONG_PG_PORT: 5432
+      KONG_PG_DATABASE: kong
+      KONG_PG_USER: kong
       KONG_PG_PASSWORD: kong
-      KONG_PROXY_LISTEN: 0.0.0.0:8000
-      KONG_PROXY_LISTEN_SSL: 0.0.0.0:8443
-      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG:  /dev/stderr
+      KONG_PROXY_LISTEN: 0.0.0.0:8000, 0.0.0.0:8443 ssl
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001, 0.0.0.0:8444 ssl
     depends_on:
-      - kong-migration
+      - kong-secure-admin
     links:
       - kong-database
     healthcheck:
@@ -69,17 +111,13 @@ services:
       interval: 5s
       timeout: 2s
       retries: 15
-    ports:
-      - "8001:8001"
-      - "8000:8000"
-      - "8443:8443"
- 
  
   #######################################
   # Konga database prepare
   #######################################
   konga-prepare:
     image: pantsel/konga:latest
+    container_name: konga-prepare
     command: "-c prepare -a postgres -u postgresql://kong:kong@kong-database:5432/konga"
     networks:
       - kong-net
@@ -99,6 +137,7 @@ services:
   #######################################
   konga:
     image: pantsel/konga:latest
+    container_name: konga
     restart: always
     networks:
      - kong-net

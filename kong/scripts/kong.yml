@@ -1,0 +1,15 @@
+_format_version: "1.1"
+
+services:
+- name: admin-api
+  url: http://127.0.0.1:8001
+  routes:
+    - paths:
+      - /admin-api
+  plugins:
+  - name: key-auth
+
+consumers:
+- username: admin
+  keyauth_credentials:
+  - key: secret
