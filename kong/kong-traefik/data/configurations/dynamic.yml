@@ -1,0 +1,50 @@
+http:
+  routers:
+    dashboard:
+      service: api@internal
+      middlewares:
+        - "basic-auth"
+      rule: "Host(`traefik.anchnet.com`)"
+    kong:
+      service: kong-service
+      middlewares:
+      rule: "Host(`kong.anchnet.com`)"
+    konga:
+      service: konga-service
+      middlewares:
+      rule: "Host(`konga.anchnet.com`)"
+  middlewares:
+    secureHeaders:
+      headers:
+        sslRedirect: true
+        forceSTSHeader: true
+        stsIncludeSubdomains: true
+        stsPreload: true
+        stsSeconds: 31536000
+
+    # UserName : admin
+    # Password : admin
+    basic-auth:
+      basicAuth:
+        users:
+          - "admin:$apr1$jkg8.qbL$wGaoPt1r/f/HN.b3.D8XQ0"
+  services:
+    kong-service:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.112.4:8000"
+    konga-service:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.112.3:1337"
+tls:
+  options:
+    default:
+      cipherSuites:
+        - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305
+        - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305
+      minVersion: VersionTLS12

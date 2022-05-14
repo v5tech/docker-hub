@@ -1,0 +1,103 @@
+version: '3.4'
+
+networks:
+  kong-net:
+  traefik:
+    external: true
+
+services:
+  #######################################
+  # Postgres: Kong Database
+  #######################################
+  kong-database:
+    image: postgres:9.6
+    container_name: kong-database
+    environment:
+      POSTGRES_DB: kong
+      POSTGRES_USER: kong
+      POSTGRES_PASSWORD: kong
+    networks:
+      - kong-net
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "kong"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: on-failure
+
+  #######################################
+  # Kong database migration
+  #######################################
+  kong-migration:
+    image: kong:latest
+    container_name: kong-migration
+    command: "kong migrations bootstrap"
+    links:
+      - kong-database
+    depends_on:
+      kong-database:
+        condition: service_healthy
+    env_file:
+      - ./kong.env
+    networks:
+      - kong-net
+    restart: on-failure
+
+  #######################################
+  # Kong: The API Gateway
+  #######################################
+  kong:
+    image: kong:latest
+    container_name: kong
+    links:
+      - kong-database
+    depends_on:
+      kong-database:
+        condition: service_healthy
+    env_file:
+      - kong.env
+    networks:
+      - kong-net
+      - traefik
+    ports:
+      - "127.0.0.1:8001:8001"
+    healthcheck:
+      test: ["CMD", "kong", "health"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    restart: on-failure
+
+  #######################################
+  # Konga database migration
+  #######################################
+  konga-prepare:
+    image: pantsel/konga
+    container_name: konga-prepare
+    command: "-c prepare -a postgres -u postgresql://kong:kong@kong-database:5432/konga"
+    networks:
+      - kong-net
+    restart: on-failure
+    links:
+      - kong-database
+    depends_on:
+      kong-database:
+        condition: service_healthy
+
+  #######################################
+  # Konga: GUI of KONG Admin API
+  #######################################
+  konga:
+    image: pantsel/konga
+    container_name: konga
+    env_file:
+      - kong.env
+    networks:
+      - kong-net
+      - traefik
+    restart: on-failure
+    links:
+      - kong-database
+    depends_on:
+      kong-database:
+        condition: service_healthy

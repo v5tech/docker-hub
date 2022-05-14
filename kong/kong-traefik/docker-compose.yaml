@@ -1,0 +1,25 @@
+version: '3.7'
+
+services:
+  traefik:
+    image: traefik:latest
+    container_name: traefik
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./data/traefik.yml:/traefik.yml:ro
+      - ./data/acme.json:/acme.json
+      # Add folder with dynamic configuration yml
+      - ./data/configurations:/configurations
+    networks:
+      - traefik
+
+networks:
+  traefik:
+    external: true
