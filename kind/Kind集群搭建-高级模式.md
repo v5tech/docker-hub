@@ -78,5 +78,5 @@ curl localhost/bar
 
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/KubeOperator/KubePi/master/docs/deploy/kubectl/kubepi.yaml
-kubectl apply -f ingress.yaml -n kube-system
+kubectl apply -f kubepi-ingress.yaml
 ```
