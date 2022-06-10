@@ -61,7 +61,10 @@ kubectl taint node kind-control-plane node-role.kubernetes.io/control-plane:NoSc
 安装 Ingress NGINX
 
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
+# DaoCloud镜像加速脚本
+wget -O image-filter.sh https://github.com/DaoCloud/public-image-mirror/raw/main/hack/image-filter.sh && chmod +x image-filter.sh
+wget https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
+cat deploy.yaml | ./image-filter.sh | kubectl apply -f -
 ```
 
 应用测试案例
@@ -79,4 +82,14 @@ curl localhost/bar
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/KubeOperator/KubePi/master/docs/deploy/kubectl/kubepi.yaml
 kubectl apply -f kubepi-ingress.yaml
+```
+
+### 安装 metrics-server
+
+```bash
+# DaoCloud镜像加速脚本
+wget -O image-filter.sh https://github.com/DaoCloud/public-image-mirror/raw/main/hack/image-filter.sh && chmod +x image-filter.sh
+wget https://raw.githubusercontent.com/ameizi/vagrant-kubernetes-cluster/master/metrics/metrics.yaml
+sed -i 's#registry.aliyuncs.com/k8sxio/metrics-server:v0.4.3#k8s.gcr.io/metrics-server/metrics-server:v0.4.5#' metrics.yaml
+cat metrics.yaml | ./image-filter.sh | kubectl apply -f -
 ```
