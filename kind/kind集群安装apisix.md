@@ -19,8 +19,7 @@ helm install apisix apisix/apisix \
 kubectl get service --namespace ingress-apisix
 ```
 
-## ingress访问gateway、dashboard
-
+## 创建ingress访问gateway、dashboard
 
 ```yaml
 apiVersion: networking.k8s.io/v1
@@ -40,9 +39,7 @@ spec:
               number: 80
         path: /
         pathType: Prefix
-
 ---
-
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -65,9 +62,7 @@ spec:
 * http://gateway.apisix.com
 * http://dashboard.apisix.com admin/admin
 
-
 ## 实战
-
 
 ```yaml
 apiVersion: apps/v1
@@ -77,38 +72,34 @@ metadata:
 spec:
   selector:
     matchLabels:
-      run: whoami
+      app: whoami
   replicas: 2
   template:
     metadata:
       labels:
-        run: whoami
+        app: whoami
     spec:
       containers:
       - name: whoami
         image: containous/whoami
         ports:
         - containerPort: 80
-
 ---
-
 apiVersion: v1
 kind: Service
 metadata:
   name: whoami
   labels:
-    run: whoami
+    app: whoami
 spec:
   ports:
   - port: 80
     protocol: TCP
   selector:
-    run: whoami
+    app: whoami
 ```
 
-
 ### 配置路由代理-使用apisix的方式apisix-route.yml
-
 
 ```yaml
 apiVersion: apisix.apache.org/v2beta3
