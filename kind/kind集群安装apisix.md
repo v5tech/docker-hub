@@ -64,6 +64,8 @@ spec:
 
 ## 实战
 
+创建whoami应用
+
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -99,7 +101,9 @@ spec:
     app: whoami
 ```
 
-### 配置路由代理-使用apisix的方式apisix-route.yml
+### 配置路由代理-使用apisix的方式
+
+apisix-route.yml
 
 ```yaml
 apiVersion: apisix.apache.org/v2beta3
@@ -117,7 +121,9 @@ spec:
        servicePort: 80
 ```
 
-### 配置路由代理-使用ingress的方式apisix-ingress.yml
+### 配置路由代理-使用ingress的方式
+
+apisix-ingress.yml
 
 ```yaml
 apiVersion: networking.k8s.io/v1
