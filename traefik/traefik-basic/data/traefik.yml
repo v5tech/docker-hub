@@ -37,6 +37,15 @@ certificatesResolvers:
       httpChallenge:
         entryPoint: web
 
+  letsencrypt-legacy:
+    acme:
+      email: admin@anchnet.com
+      storage: acme.json
+      keyType: EC384
+      preferredChain: 'DST Root CA X3'
+      httpChallenge:
+        entryPoint: web 
+
   buypass:
     acme:
       email: admin@anchnet.com
@@ -45,3 +54,29 @@ certificatesResolvers:
       keyType: EC256
       httpChallenge:
         entryPoint: web
+
+  le-dns:
+    acme:
+      email: admin@anchnet.com
+      storage: acme.json
+      keyType: EC384
+      dnsChallenge:
+        provider: acme-dns
+        resolvers:
+          - "1.1.1.1:53"
+          - "1.0.0.1:53"
+
+  zerossl:
+    acme:
+      email: admin@anchnet.com
+      storage: acme.json
+      caServer: https://acme.zerossl.com/v2/DV90
+      keyType: EC384
+      eab:
+        kid: <KEY_ID>
+        hmacEncoded: <HMAC_VALUE>
+      dnsChallenge:
+        provider: cloudflare
+        resolvers:
+          - "1.1.1.1:53"
+          - "1.0.0.1:53"
