@@ -3,7 +3,7 @@ version: '3.6'
 services:
   
   traefik:
-    image: "traefik:v2.2"
+    image: "traefik:v2.8"
     container_name: "traefik"
     restart: always
     command:
@@ -14,18 +14,17 @@ services:
       - "--entrypoints.http.address=:80"
       - "--entrypoints.https.address=:443"
     ports:
-      - "22:22"
+      - "2222:22"
       - "80:80"
       - "443:443"
-      - "8080:8080"
+      - "30080:8080"
     networks:
       - traefik
-      - gitea
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
   gitea:
-    image: gitea/gitea:latest
+    image: gitea/gitea:1.16.8
     container_name: "gitea"
     restart: always
     environment:
@@ -51,10 +50,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik"
-      # - "traefik.http.middlewares.redirectscheme.redirectscheme.scheme=https"
-      # - "traefik.http.middlewares.redirectscheme.redirectscheme.permanent=true"
-      # - "traefik.http.middlewares.redirectscheme.redirectscheme.port=443"
-      # - "traefik.http.middlewares.compress.compress=true"
+      - "traefik.http.middlewares.gzip.compress=true"
       - "traefik.http.routers.giteaweb.entrypoints=http"
       - "traefik.http.routers.giteaweb.rule=Host(`gitea.lab.com`)"
       - "traefik.http.routers.giteassl.entrypoints=https"
@@ -69,8 +65,8 @@ services:
       - "traefik.tcp.services.gitea.loadbalancer.server.port=22"
     volumes:
       - giteadata:/data
-      # - /etc/timezone:/etc/timezone:ro
-      # - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     depends_on:
       - db
     extra_hosts:
