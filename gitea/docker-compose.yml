@@ -10,7 +10,7 @@ services:
       - "--api.insecure=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.git.address=:22"
+      - "--entrypoints.ssh.address=:22"
       - "--entrypoints.http.address=:80"
       - "--entrypoints.https.address=:443"
     ports:
@@ -32,10 +32,11 @@ services:
       - USER_GID=1000
       - APP_NAME=gitea
       - RUN_MODE=prod
-      - RUN_USER=git
       - SSH_DOMAIN=gitea.lab.com
       - SSH_PORT=22
       - SSH_LISTEN_PORT=22
+      # 禁用 SSH 功能。如果要禁用 SSH 功能，则在安装 Gitea 时应将 SSH 端口设置为 0
+      #- DISABLE_SSH=true
       - HTTP_PORT=3000
       - ROOT_URL=https://gitea.lab.com
       - DB_TYPE=mysql
@@ -43,7 +44,6 @@ services:
       - DB_NAME=gitea
       - DB_USER=gitea
       - DB_PASSWD=gitea
-      - DB_CHARSET=utf8
     networks:
       - traefik
       - gitea
@@ -54,19 +54,21 @@ services:
       - "traefik.http.routers.giteaweb.entrypoints=http"
       - "traefik.http.routers.giteaweb.rule=Host(`gitea.lab.com`)"
       - "traefik.http.routers.giteassl.entrypoints=https"
-      - "traefik.http.routers.giteassl.tls=true"
       - "traefik.http.routers.giteassl.rule=Host(`gitea.lab.com`)"
+      - "traefik.http.routers.giteassl.tls=true"
       - "traefik.http.services.giteabackend.loadbalancer.server.scheme=http"
       - "traefik.http.services.giteabackend.loadbalancer.server.port=3000"
+      - "traefik.tcp.routers.giteassh.entrypoints=ssh"      
       - "traefik.tcp.routers.giteassh.rule=HostSNI(`*`)"
       - "traefik.tcp.routers.giteassh.tls=true"
-      - "traefik.tcp.routers.giteassh.entrypoints=git"
       - "traefik.tcp.routers.giteassh.service=gitea"
       - "traefik.tcp.services.gitea.loadbalancer.server.port=22"
     volumes:
-      - giteadata:/data
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+      - giteadata:/data      
+    ports:
+      - "3000:3000"
     depends_on:
       - db
     extra_hosts:
