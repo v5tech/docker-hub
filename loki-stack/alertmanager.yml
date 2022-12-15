@@ -1,0 +1,65 @@
+# 全局配置，主要配置告警方式，如邮件、webhook等
+global:
+  # 每5分钟检测一次告警是否恢复
+  resolve_timeout: 5m
+  # 这里为 QQ 邮箱 SMTP 服务器地址，官方地址为smtp.qq.com端口为 465 或 587，同时要设置开启 POP3/SMTP 服务。
+  smtp_smarthost: "smtp.exmail.qq.com:465"
+  smtp_from: "fengj@anchnet.com"
+  smtp_auth_username: "fengj@anchnet.com"
+  # 这里为登录 QQ 邮箱的授权码，非 QQ 账户登录密码，否则会报错，获取方式在 QQ 邮箱服务端设置开启 POP3/SMTP 服务时会提示。
+  smtp_auth_password: "********"
+  # 是否使用 tls，根据环境不同，来选择开启和关闭。如果提示报错 email.loginAuth failed: 530 Must issue a STARTTLS command first，那么就需要设置为 true。着重说明一下，如果开启了 tls，提示报错 starttls failed: x509: certificate signed by unknown authority，需要在 email_configs 下配置 insecure_skip_verify: true 来跳过 tls 验证。
+  smtp_require_tls: false
+  wechat_api_url: "https://qyapi.weixin.qq.com/cgi-bin/"
+  wechat_api_secret: "90TZ4irSQRR9BsOG9nQJElURhIRVeUk9whMiCCENAZY"
+  wechat_api_corp_id: "ww2de34f35a3b39b3d"
+
+# 模板
+templates:
+  - "/etc/alertmanager/templates/*.tmpl"
+
+# route：用来设置报警的分发策略。Prometheus的告警先是到达alertmanager的根路由(route)，alertmanager的根路由不能包含任何匹配项，因为根路由是所有告警的入口点。
+# 另外，根路由需要配置一个接收器(receiver)，用来处理那些没有匹配到任何子路由的告警（如果没有配置子路由，则全部由根路由发送告警），即缺省
+# 接收器。告警进入到根route后开始遍历子route节点，如果匹配到，则将告警发送到该子route定义的receiver中，然后就停止匹配了。因为在route中
+# continue默认为false，如果continue为true，则告警会继续进行后续子route匹配。如果当前告警仍匹配不到任何的子route，则该告警将从其上一级(
+# 匹配)route或者根route发出（按最后匹配到的规则发出邮件）。查看你的告警路由树，https://www.prometheus.io/webtools/alerting/routing-tree-editor/,
+# 将alertmanager.yml配置文件复制到对话框，然后点击"Draw Routing Tree"
+route:
+  # 用于分组聚合，对告警通知按标签(label)进行分组，将具有相同标签或相同告警名称(alertname)的告警通知聚合在一个组，然后作为一个通知发送。如果想完全禁用聚合，可以设置为group_by: [...]
+  group_by: ["alertname"]
+  # 当一个新的告警组被创建时，需要等待'group_wait'后才发送初始通知。这样可以确保在发送等待前能聚合更多具有相同标签的告警，最后合并为一个通知发送。
+  group_wait: 10s # 告警等待时间。告警产生后等待10s，如果有同组告警一起发出
+  # 当第一次告警通知发出后，在新的评估周期内又收到了该分组最新的告警，则需等待'group_interval'时间后，开始发送为该组触发的新告警，可以简单理解为，group就相当于一个通道(channel)。
+  group_interval: 10s # 两组告警的间隔时间
+  # 告警通知成功发送后，若问题一直未恢复，需再次重复发送的间隔。
+  repeat_interval: 1m # 重复告警的间隔时间，减少相同告警的发送频率，此处为测试设置为1分钟
+  # 告警消息接收者，与下面配置的对应。例如常用的 email、wechat、slack、webhook 等消息通知方式。
+  receiver: "webhook" # 默认接收者
+
+receivers:
+  - name: "webhook"
+    webhook_configs:
+      - url: "http://172.24.206.236:8080/webhook"
+        send_resolved: true
+
+  - name: "email"
+    email_configs:
+      - to: '{{ template "email.to"}}'
+        html: '{{ template "email.to.html" .}}'
+        send_resolved: true
+
+  - name: "wechat"
+    wechat_configs:
+      - corp_id: "ww2de34f35a3b39b3d"
+        api_secret: "90TZ4irSQRR9BsOG9nQJElURhIRVeUk9whMiCCENAZY"
+        agent_id: "1000002"
+        to_party: "3"
+        message: '{{ template "wechat.default.message" . }}'
+        send_resolved: true
+
+inhibit_rules:
+  - source_match:
+      severity: "critical"
+    target_match:
+      severity: "warning"
+    equal: ["alertname", "instance"]

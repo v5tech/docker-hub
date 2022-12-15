@@ -1,0 +1,48 @@
+auth_enabled: false
+
+server:
+  http_listen_port: 3100
+
+common:
+  path_prefix: /loki
+  storage:
+    filesystem:
+      chunks_directory: /loki/chunks
+      rules_directory: /loki/rules
+  replication_factor: 1
+  ring:
+    kvstore:
+      store: inmemory
+
+schema_config:
+  configs:
+    - from: 2020-10-24
+      store: boltdb-shipper
+      object_store: filesystem
+      schema: v11
+      index:
+        prefix: index_
+        period: 24h
+
+table_manager:
+  # 日志保留周期开关，默认为false
+  retention_deletes_enabled: true
+  # 日志保留周期
+  retention_period: 168h
+
+ruler:
+  storage:
+    type: local
+    local:
+      directory: /loki/rules
+  rule_path: /tmp/scratch
+
+  enable_api: true
+  alertmanager_url: http://alertmanager:9093
+  enable_alertmanager_v2: true
+
+  ring:
+    kvstore:
+      store: inmemory
+
+  flush_period: 1m

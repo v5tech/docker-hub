@@ -1,0 +1,46 @@
+version: "3"
+
+networks:
+  loki:
+
+services:
+  loki:
+    image: grafana/loki:2.6.0
+    container_name: loki
+    volumes:
+      - ./loki-config.yaml:/etc/loki/loki-config.yaml
+      - ./rules:/loki/rules
+    command: -config.file=/etc/loki/loki-config.yaml —log.level=debug -target=ruler
+    ports:
+      - "3100:3100"
+    networks:
+      - loki
+
+  promtail:
+    image: grafana/promtail:2.6.0
+    container_name: promtail
+    volumes:
+      - /var/log:/var/log
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - loki
+
+  alertmanager:
+    image: prom/alertmanager:v0.24.0
+    container_name: alertmanager
+    volumes:
+      - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml
+      - ./templates:/etc/alertmanager/templates
+    ports:
+      - 9093:9093
+    restart: always
+    networks:
+      - loki
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3888:3000"
+    networks:
+      - loki

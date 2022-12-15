@@ -1,0 +1,31 @@
+groups:
+  - name: "1分钟内日志中ERROR出现5次以上"
+    rules:
+      - alert: "1分钟内日志中ERROR出现5次以上"
+        expr: count_over_time({level="ERROR"}[1m]) > 5
+        for: 30s
+        labels:
+          severity: warnning
+        annotations:
+          summary: "错误日志告警"
+          description: "1分钟内日志中ERROR出现5次以上，(当前值: {{ $value }}%)"
+  - name: "1分钟内程序产生5次以上异常"
+    rules:
+      - alert: "1分钟内程序产生5次以上异常"
+        expr: count_over_time({app="smart-diagnose"}|~"Exception"[1m]) > 5
+        for: 30s
+        labels:
+          severity: warnning
+        annotations:
+          summary: "异常数告警"
+          description: "1分钟内程序产生5次以上异常，(当前值: {{ $value }}%)"
+  - name: "程序异常告警"
+    rules:
+      - alert: "程序异常告警"
+        expr: 'count_over_time({app="smart-diagnose"} |~ "Exception" [1m]) > 0'
+        for: 30s
+        labels:
+          severity: warnning
+        annotations:
+          summary: "程序异常告警"
+          description: "{{ $labels.app }} 正在抛出异常."
