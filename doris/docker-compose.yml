@@ -1,0 +1,49 @@
+version: '2.1'
+
+networks:
+  doris-network:
+    driver: bridge
+
+services:
+  doris-fe:
+    image: registry.cn-qingdao.aliyuncs.com/dataease/doris:v1.1.0-0704
+    container_name: doris-fe
+    environment:
+      - DORIS_ROLE=fe-leader
+    volumes:
+      - ./data/fe:/opt/doris/fe/doris-meta
+      - ./logs/fe:/opt/doris/fe/log
+      - ./conf/fe.conf:/opt/doris/fe/conf/fe.conf
+      - ./bin:/docker-entrypoint-initdb.d/
+    networks:
+      - doris-network
+    ports:
+      - "8030:8030"
+      - "9030:9030"
+    restart: always
+    depends_on:
+      doris-be:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -sS 127.0.0.1:8030 || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  doris-be:
+    image: registry.cn-qingdao.aliyuncs.com/dataease/doris:v1.1.0-0704
+    container_name: doris-be
+    environment:
+      - DORIS_ROLE=be
+    volumes:
+      - ./data/be:/opt/doris/be/storage
+      - ./logs/be:/opt/doris/be/log
+      - ./conf/be.conf:/opt/doris/be/conf/be.conf
+    networks:
+      - doris-network
+    restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -sS 127.0.0.1:8040 || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
