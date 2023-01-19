@@ -8,23 +8,22 @@ services:
   mysql:
     image: registry.cn-qingdao.aliyuncs.com/dataease/mysql:5.7.39
     container_name: mysql
+    restart: unless-stopped
     privileged: true
     ports:
       - 3306:3306
-    environment:
-      MYSQL_USER: root
-      MYSQL_ROOT_PASSWORD: Password123@mysql
-      TZ: Asia/Shanghai
     env_file:
       - ./conf/mysql.env
     command:
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --max_connections=3000
       --wait_timeout=31536000
       --interactive_timeout=31536000
-      --max_connections=3000
       --default-authentication-plugin=mysql_native_password
     volumes:
       - ./conf/my.cnf:/etc/mysql/conf.d/my.cnf
-      - ./bin:/docker-entrypoint-initdb.d/
+      - ./bin:/docker-entrypoint-initdb.d
       - ./data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-uroot", "-pPassword123@mysql"]

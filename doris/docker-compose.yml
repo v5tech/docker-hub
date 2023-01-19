@@ -14,7 +14,7 @@ services:
       - ./data/fe:/opt/doris/fe/doris-meta
       - ./logs/fe:/opt/doris/fe/log
       - ./conf/fe.conf:/opt/doris/fe/conf/fe.conf
-      - ./bin:/docker-entrypoint-initdb.d/
+      - ./bin:/docker-entrypoint-initdb.d
     networks:
       - doris-network
     ports:
