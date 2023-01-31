@@ -7,6 +7,11 @@ docker run -d -p 6379:6379 redislabs/redismod
 
 
 ```bash
+docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:latest
+```
+
+
+```bash
 docker run \
   -p 6379:6379 \
   -v /home/user/data:/data \
