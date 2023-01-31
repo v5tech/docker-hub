@@ -1,0 +1,62 @@
+version: '2.1'
+
+networks:
+  doris-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.19.0.0/16
+          gateway: 172.19.0.1
+
+services:
+  doris-fe:
+    build:
+      context: ./
+      dockerfile: ./docker-build/fe/Dockerfile
+    image: doris:1.1.5-fe
+    container_name: doris-fe
+    environment:
+      - DORIS_ROLE=fe-leader
+    volumes:
+      - ./data/fe:/opt/doris/doris-meta
+      - ./logs/fe:/opt/doris/log
+      - ./conf/fe.conf:/opt/doris/conf/fe.conf
+      - ./bin:/docker-entrypoint-initdb.d/
+    networks:
+      doris-network:
+        ipv4_address: 172.19.0.198
+    ports:
+      - "8030:8030"
+      - "9030:9030"
+    restart: always
+    depends_on:
+      doris-be:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -sS 127.0.0.1:8030 || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  doris-be:
+    build:
+      context: ./
+      dockerfile: ./docker-build/be/Dockerfile
+    image: doris:1.1.5-be
+    container_name: doris-be
+    environment:
+      - DORIS_ROLE=be
+    volumes:
+      - ./data/be:/opt/doris/storage
+      - ./logs/be:/opt/doris/log
+      - ./conf/be.conf:/opt/doris/conf/be.conf
+    networks:
+      doris-network:
+        ipv4_address: 172.19.0.199
+    restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -sS 127.0.0.1:8040 || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
