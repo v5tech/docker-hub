@@ -13,3 +13,6 @@
 [submodule "docker-elk"]
 	path = docker-elk
 	url = https://github.com/deviantony/docker-elk.git
+[submodule "Docker-compose-file"]
+	path = Docker-compose-file
+	url = https://github.com/lework/Docker-compose-file.git
