@@ -22,7 +22,7 @@ services:
       - ./data/fe:/opt/doris/doris-meta
       - ./logs/fe:/opt/doris/log
       - ./conf/fe.conf:/opt/doris/conf/fe.conf
-      - ./bin:/docker-entrypoint-initdb.d/
+      - ./bin:/docker-entrypoint-initdb.d
     networks:
       doris-network:
         ipv4_address: 172.19.0.198
