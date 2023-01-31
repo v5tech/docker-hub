@@ -27,11 +27,11 @@ services:
   redis:
     image: 'redis/redis-stack:latest'
     ports:
-      - '6379:6379'
+      - "6379:6379"
+    environment:
+      - "REDIS_ARGS=--appendonly yes"
     volumes:
       - ./data:/data
-    environment:
-      - REDIS_ARGS: --save 20 1
     deploy:
       replicas: 1
       restart_policy:
